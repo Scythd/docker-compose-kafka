@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html layout:decorator="thymeleaf/layouts/default"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{template1 :: headr}">
+    <title>Application</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="./../static" rel="stylesheet"/>
+</head>
+
+<body>
+<header></header>
+<main id="mainElement">
+
+</main>
+<footer>
+
+</footer>
+
+</body>
+<div th:replace="~{template1 :: scripts}">
+    <script src="link"/>
+</div>
+
+
+</html>

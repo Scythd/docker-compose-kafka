@@ -1,0 +1,87 @@
+version: '2.2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+    networks:
+      - main-net
+      - micro-net
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - main-net
+      - micro-net
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=89271531424
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - main-net
+      - micro-net
+
+  main-module:
+    depends_on:
+      postgres:
+        condition:
+          service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://postgres/postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=89271531424
+      - KAFKA_CON=kafka:29092
+    networks:
+      - main-net
+    build: ./main-module
+
+  micro-bullcow:
+    depends_on:
+      postgres:
+        condition:
+          service_healthy
+      main-module:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://postgres/postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=89271531424
+      - KAFKA_CON=kafka:29092
+    networks:
+      - micro-net
+    build: ./micro-bullcow
+networks:
+  main-net:
+    driver: bridge
+  micro-net:
+    driver: bridge
