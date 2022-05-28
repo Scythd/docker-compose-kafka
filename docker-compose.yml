@@ -1,4 +1,4 @@
-version: '2.2'
+version: '3.9'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -20,7 +20,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://${KAFKA_CON_STR}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -33,13 +33,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=89271531424
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=${DB_PWD}
+      - POSTGRES_USER=${DB_USR}
+      - POSTGRES_DB=${DB_USR}
+      - PGUSER=${DB_USR}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "pg_isready"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,10 +56,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - POSTGRES_URL=jdbc:postgresql://postgres/postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASS=89271531424
-      - KAFKA_CON=kafka:29092
+      - POSTGRES_URL=${DB_CON_STR}
+      - POSTGRES_USER=${DB_USR}
+      - POSTGRES_PASS=${DB_PWD}
+      - KAFKA_CONNECTION=${KAFKA_CON_STR}
     networks:
       - main-net
     build: ./main-module
@@ -73,10 +74,10 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - POSTGRES_URL=jdbc:postgresql://postgres/postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASS=89271531424
-      - KAFKA_CON=kafka:29092
+      - POSTGRES_URL=${DB_CON_STR}
+      - POSTGRES_USER=${DB_USR}
+      - POSTGRES_PASS=${DB_PWD}
+      - KAFKA_CONNECTION=${KAFKA_CON_STR}
     networks:
       - micro-net
     build: ./micro-bullcow

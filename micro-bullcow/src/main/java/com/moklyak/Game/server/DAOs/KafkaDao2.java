@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 @Data
 public class KafkaDao2 {
-    BigInteger id;
+    long id;
     String method;
     String token;
     String arg;
